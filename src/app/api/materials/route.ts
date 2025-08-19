@@ -65,17 +65,17 @@ export async function GET(request: NextRequest) {
     const materialsQuery = `
       SELECT 
         id, 
-        material_description as nama_material,
-        material_sap as kode_material,
-        storeroom as kategori,
-        jenisnya as divisi,
-        base_unit_of_measure as satuan,
-        status,
+        TRIM(COALESCE(material_description, 'N/A')) as nama_material,
+        TRIM(COALESCE(material_sap, '')) as kode_material,
+        TRIM(COALESCE(storeroom, '')) as kategori,
+        TRIM(COALESCE(jenisnya, '')) as divisi,
+        TRIM(COALESCE(base_unit_of_measure, '')) as satuan,
+        TRIM(COALESCE(status, 'ACTIVE')) as status,
         image_url,
-        lokasi_sistem,
-        lokasi_fisik,
-        penempatan_pada_alat,
-        deskripsi_penempatan,
+        TRIM(COALESCE(lokasi_sistem, '')) as lokasi_sistem,
+        TRIM(COALESCE(lokasi_fisik, '')) as lokasi_fisik,
+        TRIM(COALESCE(penempatan_pada_alat, '')) as penempatan_pada_alat,
+        TRIM(COALESCE(deskripsi_penempatan, '')) as deskripsi_penempatan,
         created_at,
         updated_at
       FROM materials 

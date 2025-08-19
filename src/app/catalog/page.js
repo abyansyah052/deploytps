@@ -121,7 +121,8 @@ export default function Catalog() {
       const response = await fetch(`/api/materials?${params}`);
       const data = await response.json();
       
-      setMaterials(data.materials || []);
+      console.log('📊 Catalog - API Response:', data);
+      setMaterials(data.data || []);
       setPagination(data.pagination || {});
     } catch (error) {
       console.error('Error fetching materials:', error);

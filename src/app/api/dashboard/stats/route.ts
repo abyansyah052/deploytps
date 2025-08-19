@@ -53,11 +53,12 @@ export async function GET() {
     // Get top materials by category
     const topMaterialsQuery = `
       SELECT 
-        COALESCE(material_description, 'N/A') as name,
-        storeroom as kategori,
+        TRIM(COALESCE(material_description, 'N/A')) as name,
+        TRIM(COALESCE(storeroom, '')) as kategori,
         0 as quantity,
-        COALESCE(status, 'No Status') as status
+        TRIM(COALESCE(status, 'No Status')) as status
       FROM materials 
+      WHERE material_description IS NOT NULL AND TRIM(material_description) != ''
       ORDER BY material_description ASC 
       LIMIT 5;
     `;
