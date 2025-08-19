@@ -53,10 +53,8 @@ export async function GET(request: NextRequest) {
       'kode_material': 'material_sap',
       'kategori': 'storeroom',
       'divisi': 'jenisnya',
-      'original_qty': 'original_qty',
       'satuan': 'base_unit_of_measure',
       'status': 'status',
-      'threshold_qty': 'threshold_qty',
       'lokasi': 'lokasi_fisik'
     };
     
@@ -73,8 +71,6 @@ export async function GET(request: NextRequest) {
         jenisnya as divisi,
         base_unit_of_measure as satuan,
         status,
-        original_qty,
-        threshold_qty,
         image_url,
         lokasi_sistem,
         lokasi_fisik,
@@ -143,8 +139,6 @@ export async function POST(request: NextRequest) {
       divisi,
       satuan,
       status = 'ACTIVE',
-      original_qty = 0,
-      threshold_qty = 10,
       image_url,
       lokasi_sistem,
       lokasi_fisik,
@@ -158,12 +152,12 @@ export async function POST(request: NextRequest) {
     const result = await client.query(
       `INSERT INTO materials 
         (material_description, material_sap, storeroom, jenisnya, base_unit_of_measure, 
-         status, original_qty, threshold_qty, image_url, lokasi_sistem, lokasi_fisik,
+         status, image_url, lokasi_sistem, lokasi_fisik,
          penempatan_pada_alat, deskripsi_penempatan) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
        RETURNING *`,
       [nama_material, kode_material, kategori, divisi, satuan, status, 
-       original_qty, threshold_qty, image_url, lokasi_sistem, lokasi_fisik,
+       image_url, lokasi_sistem, lokasi_fisik,
        penempatan_pada_alat, deskripsi_penempatan]
     );
 

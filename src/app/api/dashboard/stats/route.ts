@@ -31,11 +31,10 @@ export async function GET() {
     `);
     console.log('📊 Materials table check:', tableCheck.rows);
     
-    // Single optimized query to get all stats at once
+    // Single optimized query to get all stats at once (updated for new schema)
     const statsQuery = `
       SELECT 
         COUNT(*) as total_materials,
-        COUNT(CASE WHEN COALESCE(original_qty, 0) < COALESCE(threshold_qty, 10) THEN 1 END) as low_stock,
         COUNT(CASE WHEN status = 'ACTIVE' THEN 1 END) as active_materials,
         COUNT(CASE WHEN status != 'ACTIVE' OR status IS NULL THEN 1 END) as inactive_materials
       FROM materials;
@@ -93,7 +92,8 @@ export async function GET() {
     
     return NextResponse.json({
       totalMaterials: parseInt(stats.total_materials),
-      lowStock: parseInt(stats.low_stock),
+      activeEquipment: parseInt(stats.active_materials),
+      lowStock: 0, // Removed stock management feature  
       categories: categoryResult.rows,
       topMaterials: topMaterialsResult.rows,
       divisionStats: divisionResult.rows,
