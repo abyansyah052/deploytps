@@ -621,7 +621,7 @@ export default function Management() {
                               <img
                                 src={convertGoogleDriveUrl(material.image_url)}
                                 alt={material.nama_material}
-                                className="h-16 w-16 rounded-lg object-cover border border-gray-200"
+                                className="h-16 w-16 rounded-lg object-cover border border-gray-200 opacity-100"
                                 onError={(e) => {
                                   console.error('❌ Management - Image error:', e.target.src);
                                   
@@ -869,7 +869,7 @@ export default function Management() {
                         <img 
                           src={convertGoogleDriveUrl(formData.image_url)} 
                           alt="Preview" 
-                          className="h-20 w-20 object-cover rounded-md border border-gray-200"
+                          className="h-20 w-20 object-cover rounded-md border border-gray-200 opacity-100"
                           onError={(e) => {
                             console.error('❌ Management - Preview error:', e.target.src);
                             

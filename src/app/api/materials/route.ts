@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const materialsQuery = `
       SELECT 
         id, 
-        TRIM(COALESCE(material_description, 'N/A')) as nama_material,
+        REGEXP_REPLACE(TRIM(COALESCE(material_description, 'N/A')), '^[;,:\s]+', '', 'g') as nama_material,
         TRIM(COALESCE(material_sap, '')) as kode_material,
         TRIM(COALESCE(storeroom, '')) as kategori,
         TRIM(COALESCE(jenisnya, '')) as divisi,
@@ -129,7 +129,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   let client;
   try {
+    console.log('📝 Materials POST - Starting...');
+    
     const body = await request.json();
+    console.log('📋 Materials POST - Body received:', body);
+    
     const {
       nama_material,
       kode_material,
@@ -143,6 +147,14 @@ export async function POST(request: NextRequest) {
       penempatan_pada_alat,
       deskripsi_penempatan
     } = body;
+
+    // Validate required fields
+    if (!nama_material) {
+      return NextResponse.json(
+        { error: 'Material name is required' },
+        { status: 400 }
+      );
+    }
 
     client = await db.connect();
     console.log('✅ Database connected for materials POST');
@@ -159,13 +171,14 @@ export async function POST(request: NextRequest) {
        penempatan_pada_alat, deskripsi_penempatan]
     );
 
+    console.log('✅ Materials POST - Success:', result.rows[0]);
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
     console.error('❌ Database error in materials POST:', error);
     return NextResponse.json(
       { 
         error: 'Failed to create material',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        details: process.env.NODE_ENV === 'development' ? String(error) : 'Internal server error'
       },
       { status: 500 }
     );

@@ -301,8 +301,8 @@ export default function Catalog() {
                   {material.image_url ? (
                     <img
                       src={convertGoogleDriveUrl(material.image_url)}
-                      alt={material.nama_material || 'CC/ME'}
-                      className="h-full w-full object-cover rounded-t-lg"
+                      alt={material.nama_material || 'Material Image'}
+                      className="h-full w-full object-cover rounded-t-lg opacity-100"
                       onError={(e) => {
                         console.error('❌ Catalog - Image error:', e.target.src);
                         
@@ -318,7 +318,10 @@ export default function Catalog() {
                           e.target.style.display = 'none';
                         }
                       }}
-                      onLoad={() => console.log('✅ Catalog - Image loaded:', e.target.src)}
+                      onLoad={(e) => {
+                        console.log('✅ Catalog - Image loaded:', e.target.src);
+                        e.target.style.opacity = '1';
+                      }}
                     />
                   ) : (
                     <Package className="h-16 w-16 text-gray-400" />

@@ -53,7 +53,7 @@ export async function GET() {
     // Get top materials by category
     const topMaterialsQuery = `
       SELECT 
-        TRIM(COALESCE(material_description, 'N/A')) as name,
+        REGEXP_REPLACE(TRIM(COALESCE(material_description, 'N/A')), '^[;,:\s]+', '', 'g') as name,
         TRIM(COALESCE(storeroom, '')) as kategori,
         0 as quantity,
         TRIM(COALESCE(status, 'No Status')) as status
