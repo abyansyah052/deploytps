@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  user: 'tps_user',
-  host: 'localhost',
-  database: 'tps_dashboard',
-  password: 'Abyansyah123',
-  port: 5432,
-});
+import db from '../../../../lib/db';
 
 export async function GET() {
+  let client;
   try {
-    const client = await pool.connect();
+    console.log('🔄 Connecting to database for stats...');
+    client = await db.connect();
+    console.log('✅ Database connected for stats');
     
     // Single optimized query to get all stats at once
     const statsQuery = `
@@ -78,7 +73,18 @@ export async function GET() {
       recentActivity: parseInt(stats.total_materials) // Can be enhanced later
     });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+    console.error('❌ Database error in stats API:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to fetch stats',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      }, 
+      { status: 500 }
+    );
+  } finally {
+    if (client) {
+      client.release();
+      console.log('🔌 Database connection released');
+    }
   }
 }

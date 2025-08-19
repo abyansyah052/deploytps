@@ -19,8 +19,16 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
+      setLoading(true);
+      console.log('🔄 Fetching dashboard stats...');
       const response = await fetch('/api/dashboard/stats');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('✅ Dashboard stats received:', data);
       
       // Map the API response to expected format
       const mappedStats = {
@@ -35,7 +43,20 @@ export default function Dashboard() {
       
       setStats(mappedStats);
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('❌ Error fetching stats:', error);
+      // Set default stats when API fails
+      setStats({
+        totalMaterials: 0,
+        lowStock: 0,
+        activeEquipment: 0,
+        categoryStats: [],
+        statusStats: [
+          { name: 'Active', count: 0 },
+          { name: 'Inactive', count: 0 }
+        ],
+        recentActivity: 0,
+        divisionStats: []
+      });
     } finally {
       setLoading(false);
     }

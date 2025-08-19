@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  user: 'tps_user',
-  host: 'localhost',
-  database: 'tps_dashboard',
-  password: 'Abyansyah123',
-  port: 5432,
-});
+import db from '../../../lib/db';
 
 export async function GET(request: NextRequest) {
+  let client;
   try {
+    console.log('🔄 Connecting to database for materials...');
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
@@ -46,15 +40,9 @@ export async function GET(request: NextRequest) {
     }
     
     if (status) {
-      if (status === 'inactive') {
-        whereConditions.push(`(status != 'ACTIVE' OR status IS NULL)`);
-      } else if (status === 'active') {
-        whereConditions.push(`status = 'ACTIVE'`);
-      } else {
-        whereConditions.push(`COALESCE(status, 'No Status') = $${paramIndex}`);
-        queryParams.push(status);
-        paramIndex++;
-      }
+      whereConditions.push(`status = $${paramIndex}`);
+      queryParams.push(status);
+      paramIndex++;
     }
     
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -79,19 +67,21 @@ export async function GET(request: NextRequest) {
     const materialsQuery = `
       SELECT 
         id, 
-        COALESCE(material_description, 'N/A') as nama_material,
+        material_description as nama_material,
         material_sap as kode_material,
         storeroom as kategori,
         jenisnya as divisi,
-        COALESCE(original_qty, 0) as original_qty,
         base_unit_of_measure as satuan,
-        COALESCE(status, 'No Status') as status,
-        COALESCE(threshold_qty, 10) as threshold_qty,
+        status,
+        original_qty,
+        threshold_qty,
         image_url,
         lokasi_sistem,
         lokasi_fisik,
         penempatan_pada_alat,
-        deskripsi_penempatan
+        deskripsi_penempatan,
+        created_at,
+        updated_at
       FROM materials 
       ${whereClause}
       ORDER BY ${sortField} ${sortDirection}
@@ -107,19 +97,20 @@ export async function GET(request: NextRequest) {
     queryParams.push(limit);
     queryParams.push(offset);
     
-    const client = await pool.connect();
+    client = await db.connect();
+    console.log('✅ Database connected for materials GET');
     const [materialsResult, countResult] = await Promise.all([
       client.query(materialsQuery, queryParams),
-      client.query(countQuery, queryParams.slice(0, -2))
+      client.query(countQuery, queryParams.slice(0, -2)) // Exclude LIMIT and OFFSET params for count
     ]);
-    
-    client.release();
     
     const totalCount = parseInt(countResult.rows[0].total);
     const totalPages = Math.ceil(totalCount / limit);
     
+    client.release();
+    
     return NextResponse.json({
-      materials: materialsResult.rows,
+      data: materialsResult.rows,
       pagination: {
         page,
         limit,
@@ -128,20 +119,29 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to fetch materials' }, { status: 500 });
+    console.error('❌ Database error in materials GET:', error);
+    return NextResponse.json({ 
+      error: 'Failed to fetch materials',
+      details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+    }, { status: 500 });
+  } finally {
+    if (client) {
+      client.release();
+      console.log('🔌 Database connection released');
+    }
   }
 }
 
 export async function POST(request: NextRequest) {
+  let client;
   try {
     const body = await request.json();
-    const { 
-      nama_material,  // material_description
-      kode_material,  // material_sap
-      kategori,       // storeroom  
-      divisi,         // jenisnya
-      satuan,         // base_unit_of_measure
+    const {
+      nama_material,
+      kode_material,
+      kategori,
+      divisi,
+      satuan,
       status = 'ACTIVE',
       original_qty = 0,
       threshold_qty = 10,
@@ -152,7 +152,8 @@ export async function POST(request: NextRequest) {
       deskripsi_penempatan
     } = body;
 
-    const client = await pool.connect();
+    client = await db.connect();
+    console.log('✅ Database connected for materials POST');
     
     const result = await client.query(
       `INSERT INTO materials 
@@ -169,94 +170,108 @@ export async function POST(request: NextRequest) {
     client.release();
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to create material' }, { status: 500 });
+    console.error('❌ Database error in materials POST:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to create material',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
+      { status: 500 }
+    );
+  } finally {
+    if (client) {
+      client.release();
+      console.log('🔌 Database connection released');
+    }
   }
 }
 
 export async function PUT(request: NextRequest) {
+  let client;
   try {
     const body = await request.json();
-    const {
-      id,
-      nama_material,
-      kode_material,
-      kategori,
-      divisi,
-      satuan,
-      status,
-      original_qty,
-      threshold_qty,
-      image_url,
-      lokasi_sistem,
-      lokasi_fisik,
-      penempatan_pada_alat,
-      deskripsi_penempatan
-    } = body;
+    const { id, ...updateData } = body;
 
-    const client = await pool.connect();
+    if (!id) {
+      return NextResponse.json({ error: 'Material ID is required' }, { status: 400 });
+    }
+
+    const fields = Object.keys(updateData);
+    const values = Object.values(updateData);
+    
+    if (fields.length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
+
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+    
+    client = await db.connect();
+    console.log('✅ Database connected for materials PUT');
     
     const result = await client.query(
-      `UPDATE materials SET 
-        material_description = $2,
-        material_sap = $3,
-        storeroom = $4,
-        jenisnya = $5,
-        base_unit_of_measure = $6,
-        status = $7,
-        original_qty = $8,
-        threshold_qty = $9,
-        image_url = $10,
-        lokasi_sistem = $11,
-        lokasi_fisik = $12,
-        penempatan_pada_alat = $13,
-        deskripsi_penempatan = $14,
-        updated_at = CURRENT_TIMESTAMP
-       WHERE id = $1 
-       RETURNING *`,
-      [id, nama_material, kode_material, kategori, divisi, satuan, 
-       status, original_qty, threshold_qty, image_url, lokasi_sistem, 
-       lokasi_fisik, penempatan_pada_alat, deskripsi_penempatan]
+      `UPDATE materials SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${fields.length + 1} RETURNING *`,
+      [...values, id]
     );
 
     client.release();
-    
+
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Material not found' }, { status: 404 });
     }
-    
-    return NextResponse.json(result.rows[0]);
+
+    return NextResponse.json({ data: result.rows[0] });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to update material' }, { status: 500 });
+    console.error('❌ Database error in materials PUT:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to update material',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
+      { status: 500 }
+    );
+  } finally {
+    if (client) {
+      client.release();
+      console.log('🔌 Database connection released');
+    }
   }
 }
 
 export async function DELETE(request: NextRequest) {
+  let client;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Material ID is required' }, { status: 400 });
     }
 
-    const client = await pool.connect();
+    client = await db.connect();
+    console.log('✅ Database connected for materials DELETE');
     
-    const result = await client.query(
-      'DELETE FROM materials WHERE id = $1 RETURNING id',
-      [id]
-    );
+    const result = await client.query('DELETE FROM materials WHERE id = $1 RETURNING *', [id]);
 
     client.release();
-    
+
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Material not found' }, { status: 404 });
     }
-    
-    return NextResponse.json({ message: 'Material deleted successfully' });
+
+    return NextResponse.json({ message: 'Material deleted successfully', data: result.rows[0] });
   } catch (error) {
-    console.error('Database error:', error);
-    return NextResponse.json({ error: 'Failed to delete material' }, { status: 500 });
+    console.error('❌ Database error in materials DELETE:', error);
+    return NextResponse.json(
+      { 
+        error: 'Failed to delete material',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      },
+      { status: 500 }
+    );
+  } finally {
+    if (client) {
+      client.release();
+      console.log('🔌 Database connection released');
+    }
   }
 }
