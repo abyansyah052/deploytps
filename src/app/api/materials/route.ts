@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
     
     const offset = (page - 1) * limit;
     
-    let whereConditions: string[] = [];
-    let queryParams: (string | number)[] = [];
+    const whereConditions: string[] = [];
+    const queryParams: (string | number)[] = [];
     let paramIndex = 1;
     
     if (search) {

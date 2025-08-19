@@ -6,8 +6,7 @@ import {
   BarChart3, 
   Package, 
   TrendingUp, 
-  AlertTriangle,
-  Users
+  AlertTriangle
 } from 'lucide-react';
 
 export default function Dashboard() {

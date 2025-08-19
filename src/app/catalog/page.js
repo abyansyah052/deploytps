@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
-import { Search, Filter, Package, MapPin, Building, Settings, ArrowUpDown, ArrowUp, ArrowDown, AlertCircle, X } from 'lucide-react';
+import { Search, Package, MapPin, Building, Settings } from 'lucide-react';
 
 export default function Catalog() {
   const router = useRouter();
@@ -155,22 +155,22 @@ export default function Catalog() {
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
-    setPagination(prev => ({ ...prev, page: 1 }));
-  };
+  // const handleSort = (field) => {
+  //   if (sortField === field) {
+  //     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  //   } else {
+  //     setSortField(field);
+  //     setSortOrder('asc');
+  //   }
+  //   setPagination(prev => ({ ...prev, page: 1 }));
+  // };
 
-  const getSortIcon = (field) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="h-4 w-4" />;
-    }
-    return sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
-  };
+  // const getSortIcon = (field) => {
+  //   if (sortField !== field) {
+  //     return <ArrowUpDown className="h-4 w-4" />;
+  //   }
+  //   return sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
+  // };
 
   const handleShowDetail = (material) => {
     setSelectedMaterial(material);

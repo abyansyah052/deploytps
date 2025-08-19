@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     try {
       await client.query('BEGIN');
 
-      for (const row of data as any[]) {
+      for (const row of data as Record<string, unknown>[]) {
         // Validate required fields
         if (!row['Division'] || !row['Material SAP'] || !row['Material Description']) {
           console.warn('Skipping row with missing required fields:', row);
@@ -89,8 +89,8 @@ export async function POST(request: NextRequest) {
           row['Storeroom'] || '',
           row['Equipment Placement'] || '',
           row['Placement Description'] || '',
-          parseInt(row['Quantity']) || 0,
-          parseInt(row['Threshold Quantity']) || 10
+          parseInt(String(row['Quantity'] || '0')) || 0,
+          parseInt(String(row['Threshold Quantity'] || '10')) || 10
         ];
 
         await client.query(insertQuery, values);

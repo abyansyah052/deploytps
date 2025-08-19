@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Edit, Trash2, Upload, Download, Search, Package, AlertCircle, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, FileSpreadsheet, Key } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Download, Search, Package, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, FileSpreadsheet, Key } from 'lucide-react';
 
 export default function Management() {
   const router = useRouter();
@@ -99,7 +99,6 @@ export default function Management() {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportPassword, setExportPassword] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('');
-  const [uploadFile, setUploadFile] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [formData, setFormData] = useState({
     nama_material: '',
@@ -861,7 +860,7 @@ export default function Management() {
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      For Google Drive: Make sure the file is shared with "Anyone with the link can view"
+                      For Google Drive: Make sure the file is shared with &quot;Anyone with the link can view&quot;
                     </p>
                     {formData.image_url && (
                       <div className="mt-2">
@@ -969,7 +968,7 @@ export default function Management() {
                     <option value="ME">ME (Mechanical Equipment)</option>
                     <option value="Lain">Lain (Others)</option>
                   </select>
-                  <p className="text-sm text-gray-500 mt-2">Choose which division's data you want to export. Select "All Divisions" to export complete inventory.</p>
+                  <p className="text-sm text-gray-500 mt-2">Choose which division&apos;s data you want to export. Select &quot;All Divisions&quot; to export complete inventory.</p>
                 </div>
                 
                 <div>
