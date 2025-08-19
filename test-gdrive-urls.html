@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Drive URL Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-case { margin: 20px 0; border: 1px solid #ccc; padding: 15px; border-radius: 5px; }
+        .url-input { width: 100%; margin: 5px 0; }
+        .fallback-urls { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .image-preview { max-width: 200px; max-height: 200px; margin: 10px 0; border: 1px solid #ddd; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Google Drive URL Tester</h1>
+    <p>Test your Google Drive URLs to see if they work correctly:</p>
+    
+    <div class="test-case">
+        <h3>Test Your Google Drive URL:</h3>
+        <input type="text" id="testUrl" class="url-input" placeholder="Paste your Google Drive sharing URL here...">
+        <button onclick="testUrl()">Test URL</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Helper functions (same as in your React app)
+        function convertGoogleDriveUrl(url) {
+            if (!url) return url;
+            
+            console.log('🔗 Original URL:', url);
+            
+            if (url.includes('drive.google.com/uc?') || url.includes('drive.google.com/thumbnail?')) {
+                console.log('✅ Already a direct URL');
+                return url;
+            }
+            
+            let fileId = null;
+            
+            const shareMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            const openMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+            const shareUrlMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+            const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            
+            if (shareMatch) {
+                fileId = shareMatch[1];
+                console.log('📝 Extracted ID from share URL:', fileId);
+            } else if (openMatch) {
+                fileId = openMatch[1];
+                console.log('📝 Extracted ID from open URL:', fileId);
+            } else if (shareUrlMatch) {
+                fileId = shareUrlMatch[1];
+                console.log('📝 Extracted ID from generic pattern:', fileId);
+            } else if (idMatch) {
+                fileId = idMatch[1];
+                console.log('📝 Extracted ID from parameter:', fileId);
+            }
+            
+            if (fileId) {
+                const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                console.log(`🔄 Converting: ${url} -> ID: ${fileId} -> Direct: ${directUrl}`);
+                return directUrl;
+            }
+            
+            console.log('⚠️ Could not extract file ID, returning original:', url);
+            return url;
+        }
+
+        function getGoogleDriveFallbackUrls(originalUrl) {
+            function extractFileId(url) {
+                const patterns = [
+                    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+                    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+                    /\/d\/([a-zA-Z0-9_-]+)\//,
+                    /[?&]id=([a-zA-Z0-9_-]+)/
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) return match[1];
+                }
+                return null;
+            }
+
+            const fileId = extractFileId(originalUrl);
+            if (!fileId) return [originalUrl];
+            
+            return [
+                `https://drive.google.com/uc?export=view&id=${fileId}`,
+                `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
+                `https://lh3.googleusercontent.com/d/${fileId}`,
+                `https://drive.google.com/uc?id=${fileId}`,
+                originalUrl
+            ];
+        }
+
+        function testUrl() {
+            const url = document.getElementById('testUrl').value.trim();
+            const resultsDiv = document.getElementById('results');
+            
+            if (!url) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a URL to test</div>';
+                return;
+            }
+            
+            console.clear();
+            console.log('🧪 Testing URL:', url);
+            
+            // Convert URL
+            const convertedUrl = convertGoogleDriveUrl(url);
+            const fallbackUrls = getGoogleDriveFallbackUrls(url);
+            
+            let html = `
+                <h4>🔄 Conversion Results:</h4>
+                <p><strong>Original URL:</strong><br><code>${url}</code></p>
+                <p><strong>Converted URL:</strong><br><code>${convertedUrl}</code></p>
+                
+                <div class="fallback-urls">
+                    <h4>🔗 All Fallback URLs (in order):</h4>
+                    <ol>
+                        ${fallbackUrls.map(fallbackUrl => `<li><code>${fallbackUrl}</code></li>`).join('')}
+                    </ol>
+                </div>
+                
+                <h4>🖼️ Image Test:</h4>
+                <p>Testing if the converted URL loads as an image...</p>
+                <div id="imageTest"></div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+            
+            // Test image loading
+            testImageLoading(convertedUrl, fallbackUrls);
+        }
+
+        function testImageLoading(primaryUrl, fallbackUrls) {
+            const imageTestDiv = document.getElementById('imageTest');
+            let currentIndex = 0;
+            
+            function tryNextUrl() {
+                if (currentIndex >= fallbackUrls.length) {
+                    imageTestDiv.innerHTML += '<div class="error">❌ All URLs failed to load</div>';
+                    return;
+                }
+                
+                const currentUrl = fallbackUrls[currentIndex];
+                imageTestDiv.innerHTML += `<div class="info">🔄 Trying URL ${currentIndex + 1}: <code>${currentUrl}</code></div>`;
+                
+                const img = new Image();
+                const startTime = Date.now();
+                
+                img.onload = function() {
+                    const loadTime = Date.now() - startTime;
+                    imageTestDiv.innerHTML += `<div class="success">✅ SUCCESS! Loaded in ${loadTime}ms</div>`;
+                    imageTestDiv.innerHTML += `<img src="${currentUrl}" class="image-preview" alt="Test image">`;
+                };
+                
+                img.onerror = function() {
+                    const loadTime = Date.now() - startTime;
+                    imageTestDiv.innerHTML += `<div class="error">❌ Failed after ${loadTime}ms</div>`;
+                    currentIndex++;
+                    setTimeout(tryNextUrl, 1000); // Wait 1 second before trying next URL
+                };
+                
+                img.src = currentUrl;
+            }
+            
+            tryNextUrl();
+        }
+
+        // Example URLs for testing
+        function loadExample(exampleUrl) {
+            document.getElementById('testUrl').value = exampleUrl;
+            testUrl();
+        }
+    </script>
+    
+    <div class="test-case">
+        <h3>📝 Example URLs to Test:</h3>
+        <p>Click to load and test these example formats:</p>
+        <button onclick="loadExample('https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/view?usp=sharing')">
+            Standard Sharing URL
+        </button>
+        <button onclick="loadExample('https://drive.google.com/open?id=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')">
+            Open URL Format
+        </button>
+    </div>
+    
+    <div class="test-case">
+        <h3>💡 Tips for Google Drive Images:</h3>
+        <ul>
+            <li>Make sure the file is shared with <strong>"Anyone with the link can view"</strong></li>
+            <li>The file should be an image format (JPG, PNG, GIF, etc.)</li>
+            <li>Large images may take longer to load</li>
+            <li>Some corporate Google accounts may have restrictions</li>
+        </ul>
+    </div>
+</body>
+</html>

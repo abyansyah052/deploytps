@@ -1,0 +1,21 @@
+{
+  "name": "tps-dbsupa",
+  "version": "1.0.0",
+  "description": "Database export utilities for TPS Dashboard",
+  "main": "export-materials.js",
+  "scripts": {
+    "export": "node export-materials.js",
+    "test": "node -e \"console.log('Testing database connection...'); require('./export-materials.js')\""
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  },
+  "keywords": [
+    "database",
+    "export",
+    "csv",
+    "postgresql"
+  ],
+  "author": "TPS Dashboard Team",
+  "license": "MIT"
+}

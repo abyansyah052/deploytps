@@ -1,0 +1,22 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js",
+    "*.tsx": "${capture}.js",
+    "package.json": "package-lock.json,npm-shrinkwrap.json,yarn.lock,pnpm-lock.yaml",
+    "next.config.*": "next-env.d.ts",
+    "tailwind.config.*": "postcss.config.*",
+    "README.md": "PROJECT_STRUCTURE.md"
+  },
+  "files.associations": {
+    "*.js": "javascript",
+    "*.jsx": "javascriptreact",
+    "*.ts": "typescript",
+    "*.tsx": "typescriptreact"
+  },
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "javascript.preferences.includePackageJsonAutoImports": "auto"
+}
