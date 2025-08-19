@@ -4,9 +4,32 @@ import db from '../../../../lib/db';
 export async function GET() {
   let client;
   try {
+    // Debug environment variables
+    console.log('🔧 Environment variables check:', {
+      DB_HOST: process.env.DB_HOST,
+      DB_PORT: process.env.DB_PORT,
+      DB_NAME: process.env.DB_NAME,
+      DB_USER: process.env.DB_USER ? 'SET' : 'NOT_SET',
+      DB_PASSWORD: process.env.DB_PASSWORD ? 'SET' : 'NOT_SET',
+      NODE_ENV: process.env.NODE_ENV
+    });
+
     console.log('🔄 Connecting to database for stats...');
     client = await db.connect();
     console.log('✅ Database connected for stats');
+    
+    // Test basic connection first
+    console.log('🧪 Testing database connection...');
+    const testResult = await client.query('SELECT 1 as test');
+    console.log('✅ Database test query successful:', testResult.rows);
+    
+    // Check if materials table exists
+    const tableCheck = await client.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = 'materials'
+    `);
+    console.log('📊 Materials table check:', tableCheck.rows);
     
     // Single optimized query to get all stats at once
     const statsQuery = `
@@ -49,12 +72,20 @@ export async function GET() {
       ORDER BY count DESC;
     `;
 
+    console.log('📋 Executing stats queries...');
     const [statsResult, categoryResult, topMaterialsResult, divisionResult] = await Promise.all([
       client.query(statsQuery),
       client.query(categoryQuery),
       client.query(topMaterialsQuery),
       client.query(divisionQuery)
     ]);
+    
+    console.log('📊 Query results:', {
+      stats: statsResult.rows,
+      categories: categoryResult.rows,
+      topMaterials: topMaterialsResult.rows,
+      divisions: divisionResult.rows
+    });
     
     const stats = statsResult.rows[0];
     
