@@ -88,8 +88,6 @@ export async function GET() {
     
     const stats = statsResult.rows[0];
     
-    client.release();
-    
     return NextResponse.json({
       totalMaterials: parseInt(stats.total_materials),
       activeEquipment: parseInt(stats.active_materials),

@@ -27,8 +27,6 @@ export async function GET() {
       LIMIT 1
     `);
     console.log('✅ TEST ENDPOINT - Materials count:', tableResult.rows[0]);
-
-    client.release();
     
     return NextResponse.json({
       success: true,

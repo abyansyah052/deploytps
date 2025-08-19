@@ -103,8 +103,6 @@ export async function GET(request: NextRequest) {
     const totalCount = parseInt(countResult.rows[0].total);
     const totalPages = Math.ceil(totalCount / limit);
     
-    client.release();
-    
     return NextResponse.json({
       data: materialsResult.rows,
       pagination: {
@@ -161,7 +159,6 @@ export async function POST(request: NextRequest) {
        penempatan_pada_alat, deskripsi_penempatan]
     );
 
-    client.release();
     return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
     console.error('❌ Database error in materials POST:', error);
@@ -207,8 +204,6 @@ export async function PUT(request: NextRequest) {
       [...values, id]
     );
 
-    client.release();
-
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Material not found' }, { status: 404 });
     }
@@ -245,8 +240,6 @@ export async function DELETE(request: NextRequest) {
     console.log('✅ Database connected for materials DELETE');
     
     const result = await client.query('DELETE FROM materials WHERE id = $1 RETURNING *', [id]);
-
-    client.release();
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Material not found' }, { status: 404 });
