@@ -201,7 +201,7 @@ export default function Catalog() {
                     placeholder="Search materials..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                   />
                 </div>
               </div>
@@ -211,7 +211,7 @@ export default function Catalog() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium"
                 >
                   <option value="">All Divisions</option>
                   {categories.map((category) => (
@@ -227,7 +227,7 @@ export default function Catalog() {
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 font-medium"
                 >
                   <option value="">All Status</option>
                   <option value="active">Active</option>
@@ -240,13 +240,13 @@ export default function Catalog() {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-gray-500 hover:text-gray-700 text-sm"
+                className="text-gray-700 hover:text-gray-900 text-sm font-medium"
               >
                 Reset Filters
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 font-medium"
               >
                 Search
               </button>

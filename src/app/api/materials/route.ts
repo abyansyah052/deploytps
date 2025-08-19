@@ -193,15 +193,41 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   let client;
   try {
+    console.log('📝 Materials PUT - Starting...');
+    
     const body = await request.json();
+    console.log('📋 Materials PUT - Body received:', body);
+    
     const { id, ...updateData } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Material ID is required' }, { status: 400 });
     }
 
-    const fields = Object.keys(updateData);
-    const values = Object.values(updateData);
+    // Map frontend field names to database column names
+    const fieldMapping: Record<string, string> = {
+      'nama_material': 'material_description',
+      'kode_material': 'material_sap',
+      'kategori': 'storeroom',
+      'divisi': 'jenisnya',
+      'satuan': 'base_unit_of_measure',
+      'status': 'status',
+      'image_url': 'image_url',
+      'lokasi_sistem': 'lokasi_sistem',
+      'lokasi_fisik': 'lokasi_fisik',
+      'penempatan_pada_alat': 'penempatan_pada_alat',
+      'deskripsi_penempatan': 'deskripsi_penempatan'
+    };
+
+    // Convert frontend field names to database column names
+    const mappedData: Record<string, unknown> = {};
+    Object.entries(updateData).forEach(([key, value]) => {
+      const dbColumn = fieldMapping[key] || key;
+      mappedData[dbColumn] = value;
+    });
+
+    const fields = Object.keys(mappedData);
+    const values = Object.values(mappedData);
     
     if (fields.length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
@@ -212,6 +238,9 @@ export async function PUT(request: NextRequest) {
     client = await db.connect();
     console.log('✅ Database connected for materials PUT');
     
+    console.log('🔄 Materials PUT - Query:', `UPDATE materials SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${fields.length + 1}`);
+    console.log('🔄 Materials PUT - Values:', [...values, id]);
+    
     const result = await client.query(
       `UPDATE materials SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${fields.length + 1} RETURNING *`,
       [...values, id]
@@ -221,13 +250,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Material not found' }, { status: 404 });
     }
 
+    console.log('✅ Materials PUT - Success:', result.rows[0]);
     return NextResponse.json({ data: result.rows[0] });
   } catch (error) {
     console.error('❌ Database error in materials PUT:', error);
     return NextResponse.json(
       { 
         error: 'Failed to update material',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        details: process.env.NODE_ENV === 'development' ? String(error) : 'Internal server error'
       },
       { status: 500 }
     );

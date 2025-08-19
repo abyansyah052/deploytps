@@ -402,7 +402,7 @@ export default function Management() {
                   placeholder="Search materials..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
               <button
@@ -483,7 +483,7 @@ export default function Management() {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 font-medium focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">All Divisions</option>
                 {categories.map((category) => (
@@ -496,7 +496,7 @@ export default function Management() {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                className="px-3 py-1.5 border border-gray-300 rounded-md text-sm text-gray-900 font-medium focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
@@ -505,7 +505,7 @@ export default function Management() {
 
               <button
                 onClick={resetFilters}
-                className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-3 py-1.5 text-sm text-gray-700 font-medium hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
               >
                 Reset
               </button>
