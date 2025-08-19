@@ -59,10 +59,8 @@ export async function POST(request: NextRequest) {
             lokasi_fisik,
             storeroom,
             penempatan_pada_alat,
-            deskripsi_penempatan,
-            original_qty,
-            threshold_qty
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            deskripsi_penempatan
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
           ON CONFLICT (material_sap) DO UPDATE SET
             jenisnya = EXCLUDED.jenisnya,
             material_description = EXCLUDED.material_description,
@@ -73,8 +71,6 @@ export async function POST(request: NextRequest) {
             storeroom = EXCLUDED.storeroom,
             penempatan_pada_alat = EXCLUDED.penempatan_pada_alat,
             deskripsi_penempatan = EXCLUDED.deskripsi_penempatan,
-            original_qty = EXCLUDED.original_qty,
-            threshold_qty = EXCLUDED.threshold_qty,
             updated_at = CURRENT_TIMESTAMP
         `;
 
@@ -88,9 +84,7 @@ export async function POST(request: NextRequest) {
           row['Physical Location'] || '',
           row['Storeroom'] || '',
           row['Equipment Placement'] || '',
-          row['Placement Description'] || '',
-          parseInt(String(row['Quantity'] || '0')) || 0,
-          parseInt(String(row['Threshold Quantity'] || '10')) || 10
+          row['Placement Description'] || ''
         ];
 
         await client.query(insertQuery, values);

@@ -55,10 +55,10 @@ export async function GET() {
       SELECT 
         COALESCE(material_description, 'N/A') as name,
         storeroom as kategori,
-        COALESCE(original_qty, 0) as quantity,
+        0 as quantity,
         COALESCE(status, 'No Status') as status
       FROM materials 
-      ORDER BY original_qty DESC 
+      ORDER BY material_description ASC 
       LIMIT 5;
     `;
 

@@ -29,8 +29,6 @@ export async function GET(request: NextRequest) {
         storeroom as "Storeroom",
         penempatan_pada_alat as "Equipment Placement",
         deskripsi_penempatan as "Placement Description",
-        original_qty as "Quantity",
-        threshold_qty as "Threshold Quantity",
         created_at as "Created Date"
       FROM materials
       WHERE 1=1
