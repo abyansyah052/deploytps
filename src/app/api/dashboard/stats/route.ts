@@ -92,7 +92,6 @@ export async function GET() {
     return NextResponse.json({
       totalMaterials: parseInt(stats.total_materials),
       activeEquipment: parseInt(stats.active_materials),
-      lowStock: 0, // Removed stock management feature  
       categories: categoryResult.rows,
       topMaterials: topMaterialsResult.rows,
       divisionStats: divisionResult.rows,

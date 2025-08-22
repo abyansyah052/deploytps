@@ -33,7 +33,6 @@ export default function Dashboard() {
       // Map the API response to expected format
       const mappedStats = {
         totalMaterials: data.totalMaterials || 0,
-        lowStock: data.lowStock || 0,
         categories: data.categories || [],
         statusStats: data.statusDistribution || [],
         topMaterials: data.topMaterials || [],
@@ -47,7 +46,6 @@ export default function Dashboard() {
       // Set default stats when API fails
       setStats({
         totalMaterials: 0,
-        lowStock: 0,
         activeEquipment: 0,
         categoryStats: [],
         statusStats: [
@@ -101,7 +99,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
@@ -112,22 +110,6 @@ export default function Dashboard() {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Total Materials</dt>
                     <dd className="text-lg font-medium text-gray-900">{stats.totalMaterials.toLocaleString()}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <AlertTriangle className="h-6 w-6 text-red-400" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Low Stock</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.lowStock}</dd>
                   </dl>
                 </div>
               </div>
