@@ -57,7 +57,7 @@ export default function Catalog() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
+  }, [pagination.page, pagination.limit, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
 
   const fetchCategories = async () => {
     try {

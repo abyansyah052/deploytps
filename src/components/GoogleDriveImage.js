@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { Package } from 'lucide-react';
 
 export default function GoogleDriveImage({ 
@@ -111,7 +110,7 @@ export default function GoogleDriveImage({
       setHasError(true);
       setIsLoading(false);
     }
-  }, [urlIndex, fallbackUrls, url]);
+  }, [urlIndex, fallbackUrls, url, currentUrl]);
 
   const handleImageLoad = () => {
     console.log(`✅ GoogleDriveImage - Successfully loaded URL ${urlIndex + 1}/${fallbackUrls.length}:`, currentUrl);
