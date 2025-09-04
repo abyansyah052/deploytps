@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import db from '../../../../lib/db';
 
 // Type definitions
@@ -283,7 +283,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const { type, value, division } = await request.json();
 
@@ -320,7 +320,7 @@ export async function POST(request) {
   }
 }
 
-export async function DELETE(request) {
+export async function DELETE(request: NextRequest) {
   try {
     const { type, value, division } = await request.json();
 
