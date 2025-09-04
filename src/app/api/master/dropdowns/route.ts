@@ -1,6 +1,32 @@
 import { NextResponse } from 'next/server';
 import db from '../../../../lib/db';
 
+// Type definitions
+interface DropdownRow {
+  type: string;
+  value: string;
+  division?: string;
+}
+
+interface MachineNumbers {
+  RTG: string[];
+  CC: string[];
+  ME: string[];
+  LAIN: string[];
+}
+
+interface DropdownData {
+  divisions: string[];
+  store_rooms: string[];
+  units_of_measure: string[];
+  system_locations: string[];
+  physical_locations: string[];
+  machine_placements: string[];
+  subsystem_placements: string[];
+  material_status: string[];
+  machine_numbers: MachineNumbers;
+}
+
 // Ensure dropdown_options table exists
 async function ensureDropdownTable() {
   let client;
@@ -208,7 +234,7 @@ export async function GET() {
       ORDER BY type, division NULLS FIRST, value
       `);
 
-      const dropdownData = {
+      const dropdownData: DropdownData = {
         divisions: [],
         store_rooms: [],
         units_of_measure: [],
@@ -225,16 +251,19 @@ export async function GET() {
         }
       };
 
-      result.rows.forEach((row: any) => {
+      result.rows.forEach((row: DropdownRow) => {
         if (row.type === 'machine_numbers') {
-          const division = row.division as string;
+          const division = row.division;
           if (division && division in dropdownData.machine_numbers) {
-            (dropdownData.machine_numbers as any)[division].push(row.value);
+            dropdownData.machine_numbers[division as keyof MachineNumbers].push(row.value);
           }
         } else {
-          const dropdownType = row.type as keyof typeof dropdownData;
-          if (dropdownType in dropdownData && Array.isArray(dropdownData[dropdownType]) && !(dropdownData[dropdownType] as any[]).includes(row.value)) {
-            (dropdownData[dropdownType] as any[]).push(row.value);
+          const dropdownType = row.type as keyof DropdownData;
+          if (dropdownType in dropdownData && Array.isArray(dropdownData[dropdownType])) {
+            const targetArray = dropdownData[dropdownType] as string[];
+            if (!targetArray.includes(row.value)) {
+              targetArray.push(row.value);
+            }
           }
         }
       });
