@@ -225,14 +225,16 @@ export async function GET() {
         }
       };
 
-      result.rows.forEach(row => {
+      result.rows.forEach((row: any) => {
         if (row.type === 'machine_numbers') {
-          if (row.division && typeof row.division === 'string' && row.division in dropdownData.machine_numbers) {
-            dropdownData.machine_numbers[row.division as keyof typeof dropdownData.machine_numbers].push(row.value);
+          const division = row.division as string;
+          if (division && division in dropdownData.machine_numbers) {
+            (dropdownData.machine_numbers as any)[division].push(row.value);
           }
         } else {
-          if (dropdownData[row.type] && !dropdownData[row.type].includes(row.value)) {
-            dropdownData[row.type].push(row.value);
+          const dropdownType = row.type as keyof typeof dropdownData;
+          if (dropdownType in dropdownData && Array.isArray(dropdownData[dropdownType]) && !(dropdownData[dropdownType] as any[]).includes(row.value)) {
+            (dropdownData[dropdownType] as any[]).push(row.value);
           }
         }
       });
