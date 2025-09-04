@@ -227,8 +227,8 @@ export async function GET() {
 
       result.rows.forEach(row => {
         if (row.type === 'machine_numbers') {
-          if (row.division && dropdownData.machine_numbers[row.division]) {
-            dropdownData.machine_numbers[row.division].push(row.value);
+          if (row.division && typeof row.division === 'string' && row.division in dropdownData.machine_numbers) {
+            dropdownData.machine_numbers[row.division as keyof typeof dropdownData.machine_numbers].push(row.value);
           }
         } else {
           if (dropdownData[row.type] && !dropdownData[row.type].includes(row.value)) {
