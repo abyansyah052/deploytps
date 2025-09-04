@@ -3,84 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
+import GoogleDriveImage from '../../components/GoogleDriveImage';
 import { Search, Package, MapPin, Building, Settings } from 'lucide-react';
 
 export default function Catalog() {
   const router = useRouter();
-
-  // Enhanced Google Drive URL converter with multiple fallbacks
-  const convertGoogleDriveUrl = (url) => {
-    if (!url) return url;
-    
-    console.log('🔗 Catalog - Processing URL:', url);
-    
-    // Already converted check
-    if (url.includes('drive.google.com/uc?export=view') || 
-        url.includes('drive.google.com/thumbnail?') ||
-        url.includes('lh3.googleusercontent.com')) {
-      console.log('✅ Catalog - Already a direct URL');
-      return url;
-    }
-    
-    // Extract file ID
-    const extractFileId = (url) => {
-      const patterns = [
-        /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
-        /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
-        /\/d\/([a-zA-Z0-9_-]+)\//,
-        /[?&]id=([a-zA-Z0-9_-]+)/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match) {
-          console.log('📝 Catalog - File ID found:', match[1]);
-          return match[1];
-        }
-      }
-      return null;
-    };
-
-    const fileId = extractFileId(url);
-    if (fileId) {
-      const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-      console.log('🔄 Catalog - Converted to:', directUrl);
-      return directUrl;
-    }
-    
-    console.log('⚠️ Catalog - No file ID found, using original URL');
-    return url;
-  };
-
-  // Get fallback URLs for error handling
-  const getFallbackUrls = (originalUrl) => {
-    const extractFileId = (url) => {
-      const patterns = [
-        /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
-        /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
-        /\/d\/([a-zA-Z0-9_-]+)\//,
-        /[?&]id=([a-zA-Z0-9_-]+)/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match) return match[1];
-      }
-      return null;
-    };
-
-    const fileId = extractFileId(originalUrl);
-    if (!fileId) return [originalUrl];
-    
-    return [
-      `https://drive.google.com/uc?export=view&id=${fileId}`,
-      `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
-      `https://drive.google.com/thumbnail?id=${fileId}&sz=w300`,
-      `https://lh3.googleusercontent.com/d/${fileId}`,
-      `https://drive.google.com/uc?id=${fileId}`,
-      originalUrl
-    ];
-  };
 
   const [materials, setMaterials] = useState([]);
   const [pagination, setPagination] = useState({
@@ -122,6 +49,12 @@ export default function Catalog() {
       const data = await response.json();
       
       console.log('📊 Catalog - API Response:', data);
+      console.log('📋 Materials with images:', data.data?.filter(m => m.image_url)?.length || 0);
+      data.data?.forEach((material, index) => {
+        if (material.image_url) {
+          console.log(`🖼️ Material ${index}: ${material.nama_material} - ${material.image_url}`);
+        }
+      });
       setMaterials(data.data || []);
       setPagination(data.pagination || {});
     } catch (error) {
@@ -268,10 +201,10 @@ export default function Catalog() {
         {/* Results Info */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-gray-600">
-            Showing {materials.length} of {pagination.total.toLocaleString()} materials
+            Showing {materials.length} of {(pagination.total || 0).toLocaleString()} materials
           </p>
           <div className="text-sm text-gray-500">
-            Page {pagination.page} of {pagination.totalPages}
+            Page {pagination.page} of {pagination.totalPages || 1}
           </div>
         </div>
 
@@ -297,31 +230,13 @@ export default function Catalog() {
                 className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => handleShowDetail(material)}
               >
-                <div className="h-48 bg-gray-100 rounded-t-lg flex items-center justify-center">
+                <div className="h-48 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center">
                   {material.image_url ? (
-                    <img
-                      src={convertGoogleDriveUrl(material.image_url)}
+                    <GoogleDriveImage
+                      url={material.image_url}
                       alt={material.nama_material || 'Material Image'}
-                      className="h-full w-full object-cover rounded-t-lg opacity-100"
-                      onError={(e) => {
-                        console.error('❌ Catalog - Image error:', e.target.src);
-                        
-                        const fallbacks = getFallbackUrls(material.image_url);
-                        const currentIndex = fallbacks.indexOf(e.target.src);
-                        
-                        if (currentIndex < fallbacks.length - 1) {
-                          const nextUrl = fallbacks[currentIndex + 1];
-                          console.log('🔄 Catalog - Trying:', nextUrl);
-                          e.target.src = nextUrl;
-                        } else {
-                          console.log('❌ Catalog - All URLs failed');
-                          e.target.style.display = 'none';
-                        }
-                      }}
-                      onLoad={(e) => {
-                        console.log('✅ Catalog - Image loaded:', e.target.src);
-                        e.target.style.opacity = '1';
-                      }}
+                      className="h-full w-full object-cover"
+                      fallbackClassName="h-16 w-16 text-gray-400"
                     />
                   ) : (
                     <Package className="h-16 w-16 text-gray-400" />
@@ -378,12 +293,12 @@ export default function Catalog() {
             </button>
             
             <span className="px-3 py-2 text-sm text-gray-700">
-              Page {pagination.page} of {pagination.totalPages}
+              Page {pagination.page} of {pagination.totalPages || 1}
             </span>
             
             <button
               onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
-              disabled={pagination.page >= pagination.totalPages}
+              disabled={pagination.page >= (pagination.totalPages || 1)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
@@ -391,7 +306,7 @@ export default function Catalog() {
           </div>
           
           <div className="text-sm text-gray-600">
-            Total: {pagination.total.toLocaleString()} items
+            Total: {(pagination.total || 0).toLocaleString()} items
           </div>
         </div>
       </div>
@@ -403,12 +318,12 @@ export default function Catalog() {
             <div className="mt-3">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">
+                <h3 className="text-2xl font-bold text-gray-900 pr-4">
                   {selectedMaterial.nama_material || 'Unnamed Material'}
                 </h3>
                 <button
                   onClick={handleCloseDetail}
-                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold flex-shrink-0"
                 >
                   ×
                 </button>
@@ -417,28 +332,14 @@ export default function Catalog() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Image Section */}
                 <div className="lg:col-span-1">
-                  <div className="bg-gray-100 rounded-lg p-4 h-64 flex items-center justify-center">
+                  <div className="bg-gray-100 rounded-lg p-4 h-64 overflow-hidden flex items-center justify-center">
                     {selectedMaterial.image_url ? (
-                      <img
-                        src={convertGoogleDriveUrl(selectedMaterial.image_url)}
+                      <GoogleDriveImage
+                        url={selectedMaterial.image_url}
                         alt={selectedMaterial.nama_material}
-                        className="max-h-full max-w-full object-contain rounded-lg"
-                        onError={(e) => {
-                          console.error('❌ Detail Modal - Image error:', e.target.src);
-                          
-                          const fallbacks = getFallbackUrls(selectedMaterial.image_url);
-                          const currentIndex = fallbacks.indexOf(e.target.src);
-                          
-                          if (currentIndex < fallbacks.length - 1) {
-                            const nextUrl = fallbacks[currentIndex + 1];
-                            console.log('🔄 Detail Modal - Trying:', nextUrl);
-                            e.target.src = nextUrl;
-                          } else {
-                            console.log('❌ Detail Modal - All URLs failed');
-                            e.target.style.display = 'none';
-                          }
-                        }}
-                        onLoad={() => console.log('✅ Detail Modal - Image loaded:', e.target.src)}
+                        className="max-h-full max-w-full object-contain"
+                        fallbackIcon={<Package className="h-16 w-16 text-gray-400" />}
+                        fallbackText="No Image Available"
                       />
                     ) : (
                       <div className="text-gray-500 text-center">

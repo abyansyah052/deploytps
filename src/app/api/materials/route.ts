@@ -67,15 +67,17 @@ export async function GET(request: NextRequest) {
         id, 
         REGEXP_REPLACE(TRIM(COALESCE(material_description, 'N/A')), '^[;,:\s]+', '', 'g') as nama_material,
         TRIM(COALESCE(material_sap, '')) as kode_material,
-        TRIM(COALESCE(storeroom, '')) as kategori,
-        TRIM(COALESCE(jenisnya, '')) as divisi,
-        TRIM(COALESCE(base_unit_of_measure, '')) as satuan,
+        TRIM(COALESCE(storeroom, '')) as store_room,
+        TRIM(COALESCE(jenisnya, '')) as division,
+        TRIM(COALESCE(base_unit_of_measure, '')) as unit_of_measure,
         TRIM(COALESCE(status, 'ACTIVE')) as status,
         image_url,
-        TRIM(COALESCE(lokasi_sistem, '')) as lokasi_sistem,
-        TRIM(COALESCE(lokasi_fisik, '')) as lokasi_fisik,
-        TRIM(COALESCE(penempatan_pada_alat, '')) as penempatan_pada_alat,
-        TRIM(COALESCE(deskripsi_penempatan, '')) as deskripsi_penempatan,
+        TRIM(COALESCE(lokasi_sistem, '')) as system_location,
+        TRIM(COALESCE(lokasi_fisik, '')) as physical_location,
+        TRIM(COALESCE(penempatan_pada_alat, '')) as machine_placement,
+        TRIM(COALESCE(deskripsi_penempatan, '')) as subsystem_placement,
+        TRIM(COALESCE(placement_description, '')) as placement_description,
+        TRIM(COALESCE(machine_number, '')) as machine_number,
         created_at,
         updated_at
       FROM materials 
@@ -145,7 +147,9 @@ export async function POST(request: NextRequest) {
       lokasi_sistem,
       lokasi_fisik,
       penempatan_pada_alat,
-      deskripsi_penempatan
+      deskripsi_penempatan,
+      placement_description,
+      machine_number
     } = body;
 
     // Validate required fields
@@ -163,12 +167,12 @@ export async function POST(request: NextRequest) {
       `INSERT INTO materials 
         (material_description, material_sap, storeroom, jenisnya, base_unit_of_measure, 
          status, image_url, lokasi_sistem, lokasi_fisik,
-         penempatan_pada_alat, deskripsi_penempatan) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+         penempatan_pada_alat, deskripsi_penempatan, placement_description, machine_number) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
        RETURNING *`,
       [nama_material, kode_material, kategori, divisi, satuan, status, 
        image_url, lokasi_sistem, lokasi_fisik,
-       penempatan_pada_alat, deskripsi_penempatan]
+       penempatan_pada_alat, deskripsi_penempatan, placement_description, machine_number]
     );
 
     console.log('✅ Materials POST - Success:', result.rows[0]);

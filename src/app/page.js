@@ -6,15 +6,18 @@ import {
   BarChart3, 
   Package, 
   TrendingUp, 
-  AlertTriangle
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [sopContent, setSopContent] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
+    fetchSopContent();
   }, []);
 
   const fetchStats = async () => {
@@ -57,6 +60,27 @@ export default function Dashboard() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSopContent = async () => {
+    try {
+      console.log('🔄 Fetching SOP content...');
+      const response = await fetch('/api/sop');
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ SOP content received:', data);
+        setSopContent(data);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching SOP content:', error);
+      // Set default SOP content
+      setSopContent({
+        title: 'SOP/Pemberitahuan',
+        content: '<p>Belum ada SOP atau pemberitahuan yang ditambahkan.</p>',
+        updatedAt: new Date().toISOString()
+      });
     }
   };
 
@@ -229,54 +253,38 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Top Materials Table */}
+        {/* SOP & Pemberitahuan Section */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Top Materials</h3>
+            <h3 className="text-lg font-medium text-gray-900">
+              {sopContent?.title || 'SOP/Pemberitahuan'}
+            </h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Material Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {(stats.topMaterials || []).slice(0, 10).map((material, index) => {
-                  return (
-                    <tr key={material.id || index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {material.name || 'CC/ME'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {material.kategori || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {(material.quantity || 0).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          material.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {material.status || 'active'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="p-6">
+            {!sopContent ? (
+              <div className="text-center py-8">
+                <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Loading SOP content...</h3>
+              </div>
+            ) : (
+              <div 
+                className="tinymce-content"
+                dangerouslySetInnerHTML={{ __html: sopContent.content }}
+              />
+            )}
+            {sopContent && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  Last updated: {new Date(sopContent.updatedAt).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

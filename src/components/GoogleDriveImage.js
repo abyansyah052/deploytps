@@ -18,7 +18,12 @@ export default function GoogleDriveImage({
 
   // Enhanced Google Drive URL conversion with multiple fallbacks
   const generateFallbackUrls = (originalUrl) => {
-    if (!originalUrl) return [];
+    console.log('🔧 GoogleDriveImage - Generating fallbacks for:', originalUrl);
+    
+    if (!originalUrl) {
+      console.log('❌ GoogleDriveImage - No URL provided');
+      return [];
+    }
 
     console.log('🔗 GoogleDriveImage - Processing URL:', originalUrl);
 
@@ -58,6 +63,10 @@ export default function GoogleDriveImage({
       `https://lh3.googleusercontent.com/d/${fileId}`,
       `https://drive.google.com/uc?id=${fileId}`,
       `https://drive.google.com/uc?export=download&id=${fileId}`,
+      // Use image proxy for Chrome compatibility
+      `/api/image-proxy?url=${encodeURIComponent(`https://drive.google.com/uc?export=view&id=${fileId}`)}`,
+      `/api/image-proxy?url=${encodeURIComponent(`https://drive.google.com/thumbnail?id=${fileId}&sz=w400`)}`,
+      `/api/image-proxy?url=${encodeURIComponent(`https://lh3.googleusercontent.com/d/${fileId}`)}`,
       originalUrl
     ];
 
@@ -68,6 +77,9 @@ export default function GoogleDriveImage({
   const fallbackUrls = generateFallbackUrls(url);
 
   useEffect(() => {
+    console.log('🚀 GoogleDriveImage - useEffect triggered with url:', url);
+    console.log('📝 GoogleDriveImage - Fallback URLs count:', fallbackUrls.length);
+    
     if (fallbackUrls.length > 0) {
       setCurrentUrl(fallbackUrls[0]);
       setUrlIndex(0);
@@ -78,7 +90,10 @@ export default function GoogleDriveImage({
   }, [url]);
 
   const handleImageError = (e) => {
-    console.error(`❌ GoogleDriveImage - Failed to load URL ${urlIndex + 1}/${fallbackUrls.length}:`, currentUrl);
+    // Suppress detailed error logging to reduce console noise
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 GoogleDriveImage - Trying fallback ${urlIndex + 1}/${fallbackUrls.length}`);
+    }
     
     setErrorDetails(`Failed URL ${urlIndex + 1}/${fallbackUrls.length}: ${currentUrl}`);
 
@@ -86,12 +101,12 @@ export default function GoogleDriveImage({
       const nextIndex = urlIndex + 1;
       const nextUrl = fallbackUrls[nextIndex];
       
-      console.log(`🔄 GoogleDriveImage - Trying fallback ${nextIndex + 1}/${fallbackUrls.length}:`, nextUrl);
-      
       setUrlIndex(nextIndex);
       setCurrentUrl(nextUrl);
     } else {
-      console.log('❌ GoogleDriveImage - All fallback URLs failed');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('❌ GoogleDriveImage - All fallback URLs failed for:', url);
+      }
       setHasError(true);
       setIsLoading(false);
     }
