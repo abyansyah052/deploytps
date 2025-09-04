@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Upload, Download, Search, Package, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, FileSpreadsheet, Key } from 'lucide-react';
 import GoogleDriveImage from '../../components/GoogleDriveImage';
@@ -59,14 +59,14 @@ export default function Management() {
     fetchMaterials();
     fetchCategories();
     fetchDropdownData();
-  }, [pagination.page, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
+  }, [fetchMaterials]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, [searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
 
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -89,7 +89,7 @@ export default function Management() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
 
   const fetchCategories = async () => {
     try {
@@ -506,7 +506,7 @@ export default function Management() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {materials.map((material, index) => (
+              {materials.map((material) => (
                 <div key={material.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors duration-150">
                   {/* Mobile-First Layout */}
                   <div className="space-y-4">

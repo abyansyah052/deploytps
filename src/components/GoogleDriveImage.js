@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Package } from 'lucide-react';
 
 export default function GoogleDriveImage({ 
@@ -87,9 +88,9 @@ export default function GoogleDriveImage({
       setHasError(false);
       setErrorDetails('');
     }
-  }, [url]);
+  }, [url, fallbackUrls]);
 
-  const handleImageError = (e) => {
+  const handleImageError = useCallback(() => {
     // Suppress detailed error logging to reduce console noise
     if (process.env.NODE_ENV === 'development') {
       console.log(`🔄 GoogleDriveImage - Trying fallback ${urlIndex + 1}/${fallbackUrls.length}`);
@@ -110,7 +111,7 @@ export default function GoogleDriveImage({
       setHasError(true);
       setIsLoading(false);
     }
-  };
+  }, [urlIndex, fallbackUrls, url]);
 
   const handleImageLoad = () => {
     console.log(`✅ GoogleDriveImage - Successfully loaded URL ${urlIndex + 1}/${fallbackUrls.length}:`, currentUrl);
@@ -142,6 +143,7 @@ export default function GoogleDriveImage({
 
   return (
     <div className="relative">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={currentUrl}
         alt={alt}

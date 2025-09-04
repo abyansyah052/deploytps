@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from '../../components/Navigation';
 import GoogleDriveImage from '../../components/GoogleDriveImage';
@@ -26,12 +26,7 @@ export default function Catalog() {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  useEffect(() => {
-    fetchMaterials();
-    fetchCategories();
-  }, [pagination.page, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
-
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -62,7 +57,7 @@ export default function Catalog() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, searchTerm, selectedCategory, selectedStatus, sortField, sortOrder]);
 
   const fetchCategories = async () => {
     try {
@@ -73,6 +68,11 @@ export default function Catalog() {
       console.error('Error fetching categories:', error);
     }
   };
+
+  useEffect(() => {
+    fetchMaterials();
+    fetchCategories();
+  }, [fetchMaterials]);
 
   const handleSearch = (e) => {
     e.preventDefault();

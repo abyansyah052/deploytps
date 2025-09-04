@@ -13,7 +13,7 @@ interface SopItem {
 
 // This should reference the same data as the main route
 // In production, this would be handled by database operations
-let sopData: SopItem[] = [
+const sopData: SopItem[] = [
   {
     id: 1,
     title: 'Protokol Keselamatan Kerja',
