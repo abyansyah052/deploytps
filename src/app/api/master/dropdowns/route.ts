@@ -155,7 +155,7 @@ async function loadExistingData() {
             `, [mapping.type, row.value]);
           }
         } catch (columnError) {
-          console.log(`Error processing column ${mapping.column}:`, columnError.message);
+          console.log(`Error processing column ${mapping.column}:`, columnError instanceof Error ? columnError.message : String(columnError));
         }
       }
     }
@@ -179,7 +179,7 @@ async function loadExistingData() {
           `, [row.value, row.division]);
         }
       } catch (machineError) {
-        console.log('Error processing machine numbers:', machineError.message);
+        console.log('Error processing machine numbers:', machineError instanceof Error ? machineError.message : String(machineError));
       }
     }
 
@@ -241,7 +241,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching dropdown data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch dropdown data', details: error.message },
+      { error: 'Failed to fetch dropdown data', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   } finally {
@@ -276,14 +276,14 @@ export async function POST(request) {
     }
   } catch (error) {
     console.error('Error adding dropdown item:', error);
-    if (error.code === '23505') { // Unique constraint violation
+    if (error instanceof Error && 'code' in error && error.code === '23505') { // Unique constraint violation
       return NextResponse.json(
         { error: 'Item already exists' },
         { status: 409 }
       );
     }
     return NextResponse.json(
-      { error: 'Failed to add dropdown item', details: error.message },
+      { error: 'Failed to add dropdown item', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -324,7 +324,7 @@ export async function DELETE(request) {
   } catch (error) {
     console.error('Error deleting dropdown item:', error);
     return NextResponse.json(
-      { error: 'Failed to delete dropdown item', details: error.message },
+      { error: 'Failed to delete dropdown item', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
